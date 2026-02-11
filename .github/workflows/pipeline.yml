@@ -1,0 +1,26 @@
+name: Intermediate CI Pipeline
+on: [push] # Runs every time you save a change
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Tests
+        run: echo "Running automated tests..."
+      - name: Create a Fake Build File
+        run: mkdir dist && echo "Ready for deployment" > dist/app.txt
+      - name: Save Build File (Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test # This job waits for the first one to finish
+    steps:
+      - name: Use the Secret
+        env:
+          MY_TOKEN: ${{ secrets.API_TOKEN }}
+        run: echo "Deploying to staging using a protected token..."
